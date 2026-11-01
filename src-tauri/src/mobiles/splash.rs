@@ -39,8 +39,10 @@ mod platform {
     }
 
     pub fn show() {
-        if let Err(err) = invoke("show") {
-            tracing::error!("[Splashscreen] failed to show on Android: {}", err);
+        // 入口早于 Android 上下文初始化，此时调用会 panic 导致闪退，这里捕获后忽略
+        match std::panic::catch_unwind(|| invoke("show")) {
+            Ok(Err(err)) => tracing::error!("[Splashscreen] failed to show on Android: {}", err),
+            _ => {}
         }
     }
 
