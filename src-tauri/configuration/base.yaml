@@ -1,5 +1,5 @@
 database:
   sqlite_file: db.sqlite
 backend:
-  base_url: https://hulaspark.com/api
-active_config: local
+  base_url: https://xh3.sjyc.cc/api
+active_config: production
