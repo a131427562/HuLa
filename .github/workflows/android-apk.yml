@@ -47,7 +47,7 @@ jobs:
       - name: Build APK (arm64, debug-signed so it can be installed directly)
         env:
           NODE_OPTIONS: --max-old-space-size=4096
-        run: pnpm tauri android build --apk --debug --target aarch64
+        run: pnpm tauri android build --apk true --debug --target aarch64
 
       - name: Collect APK
         run: |
