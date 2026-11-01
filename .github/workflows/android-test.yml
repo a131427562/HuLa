@@ -38,14 +38,18 @@ jobs:
         run: pnpm install --no-frozen-lockfile
       - name: Skip type-check
         run: sed -i 's/pnpm build/pnpm vite build/' src-tauri/tauri.android.conf.json
-      - name: Build x86_64 debug APK
+      - name: Build x86_64 release APK
         env:
           NODE_OPTIONS: --max-old-space-size=4096
-        run: pnpm tauri android build --apk true --debug --target x86_64
-      - name: Collect APK
+        run: pnpm tauri android build --apk true --target x86_64
+      - name: Collect and sign APK
         run: |
           mkdir -p out
-          find src-tauri/gen/android -name "*.apk" -exec cp {} out/app.apk \;
+          UNSIGNED=$(find src-tauri/gen/android -name "*release-unsigned.apk" | head -1)
+          BT="$ANDROID_HOME/build-tools/36.0.0"
+          keytool -genkeypair -keystore ks.jks -alias hula -keyalg RSA -keysize 2048 -validity 10000 -storepass hulahula -keypass hulahula -dname "CN=HuLa"
+          "$BT/zipalign" -f -p 4 "$UNSIGNED" aligned.apk
+          "$BT/apksigner" sign --ks ks.jks --ks-pass pass:hulahula --out out/app.apk aligned.apk
           ls -lh out
       - name: Enable KVM
         run: |
