@@ -38,20 +38,15 @@ mod platform {
         })
     }
 
-    pub fn show() {
-        // 入口早于 Android 上下文初始化，此时调用会 panic 导致闪退，这里捕获后忽略
-        match std::panic::catch_unwind(|| invoke("show")) {
-            Ok(Err(err)) => tracing::error!("[Splashscreen] failed to show on Android: {}", err),
-            _ => {}
-        }
+    // Android 上下文在入口处尚未初始化，调用会 panic（release 为 abort）导致闪退，这里不做任何操作
+    #[allow(dead_code)]
+    fn invoke_unused() -> Result<(), jni::errors::Error> {
+        invoke("show")
     }
 
-    pub fn hide() {
-        match std::panic::catch_unwind(|| invoke("hide")) {
-            Ok(Err(err)) => tracing::error!("[Splashscreen] failed to hide on Android: {}", err),
-            _ => {}
-        }
-    }
+    pub fn show() {}
+
+    pub fn hide() {}
 }
 
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
