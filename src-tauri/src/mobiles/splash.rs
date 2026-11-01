@@ -47,8 +47,9 @@ mod platform {
     }
 
     pub fn hide() {
-        if let Err(err) = invoke("hide") {
-            tracing::error!("[Splashscreen] failed to hide on Android: {}", err);
+        match std::panic::catch_unwind(|| invoke("hide")) {
+            Ok(Err(err)) => tracing::error!("[Splashscreen] failed to hide on Android: {}", err),
+            _ => {}
         }
     }
 }
