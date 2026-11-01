@@ -50,12 +50,17 @@ jobs:
       - name: Build APK (arm64, debug-signed so it can be installed directly)
         env:
           NODE_OPTIONS: --max-old-space-size=4096
-        run: pnpm tauri android build --apk true --debug --target aarch64
+        run: pnpm tauri android build --apk true --target aarch64
 
-      - name: Collect APK
+      - name: Collect and sign APK
         run: |
           mkdir -p out
-          find src-tauri/gen/android -name "*.apk" -exec cp {} out/ \;
+          UNSIGNED=$(find src-tauri/gen/android -name "*release-unsigned.apk" | head -1)
+          echo "unsigned: $UNSIGNED"
+          BT="$ANDROID_HOME/build-tools/36.0.0"
+          keytool -genkeypair -keystore ks.jks -alias hula -keyalg RSA -keysize 2048 -validity 10000 -storepass hulahula -keypass hulahula -dname "CN=HuLa"
+          "$BT/zipalign" -f -p 4 "$UNSIGNED" aligned.apk
+          "$BT/apksigner" sign --ks ks.jks --ks-pass pass:hulahula --out out/HuLa.apk aligned.apk
           ls -lh out
 
       - uses: actions/upload-artifact@v4
